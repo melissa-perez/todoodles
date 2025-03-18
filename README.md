@@ -1,12 +1,12 @@
-# React + Vite
+# Todoodles
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is React web app for a to-do list. Created using Vite.
 
-Currently, two official plugins are available:
+## Installation instructions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Clone the app into your local workspace
+2. `npm install`
 
-## Expanding the ESLint configuration
+## How to run the development server
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To start the development server, use: `npm run dev`, app run on  ```http://localhost:5173/```
