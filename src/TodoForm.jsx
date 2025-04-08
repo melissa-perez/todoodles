@@ -2,14 +2,14 @@ import { useRef } from 'react';
 
 function TodoForm({ onAddTodo }) {
   const todoTitleInput = useRef('');
-  let todoId = useRef(1);
+  const id = Date.now();
+
   const handleAddTodo = (event) => {
     event.preventDefault();
     const title = event.target.title.value;
-    onAddTodo({ title: title, id: todoId.current });
+    onAddTodo({ title, id });
     event.target.title.value = '';
     todoTitleInput.current.focus();
-    todoId.current = todoId.current + 1;
   };
   return (
     <>
