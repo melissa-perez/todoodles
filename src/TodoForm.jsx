@@ -24,7 +24,7 @@ function TodoForm({ onAddTodo }) {
           }}
           ref={todoTitleInput}
         />
-        <button>Add Todo</button>
+        <button disabled={workingTodo === ''}>Add Todo</button>
       </form>
     </>
   );
