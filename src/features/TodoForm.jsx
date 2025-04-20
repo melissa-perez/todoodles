@@ -12,6 +12,7 @@ function TodoForm({ onAddTodo }) {
     todoTitleInput.current.focus();
     setWorkingTodo('');
   };
+  
   return (
     <>
       <form onSubmit={handleAddTodo}>
