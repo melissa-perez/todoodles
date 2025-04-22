@@ -6,14 +6,23 @@ import TodoForm from './TodoForm';
 function App() {
   const [todoList, setTodoList] = useState([]);
 
-  const handleAddTodo = (newTodo) => {
+  const addTodo = (newTodo) => {
+    newTodo.isCompleted = false;
     setTodoList([...todoList, newTodo]);
+  };
+
+  const completeTodo = (id) => {
+    const updatedTodos = todoList.map((todo) => {
+      if (todo.id === id) return { ...todo, isCompleted: true };
+      return todo;
+    });
+    setTodoList([...updatedTodos]);
   };
   return (
     <div>
       <h1>Todoodles</h1>
-      <TodoForm onAddTodo={handleAddTodo} />
-      <TodoList todos={todoList} />
+      <TodoForm onAddTodo={addTodo} />
+      <TodoList todos={todoList} onCompleteTodo={completeTodo} />
     </div>
   );
 }
