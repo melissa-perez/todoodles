@@ -77,7 +77,13 @@ function App() {
         <>
           <hr />
           <p>{errorMessage}</p>
-          <button>Dismiss Error Message</button>
+          <button
+            onClick={() => {
+              setErrorMessage('');
+            }}
+          >
+            Dismiss Error Message
+          </button>
         </>
       ) : (
         <></>
