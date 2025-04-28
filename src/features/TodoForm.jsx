@@ -8,11 +8,11 @@ function TodoForm({ onAddTodo }) {
 
   const handleAddTodo = (event) => {
     event.preventDefault();
-    onAddTodo({ title: workingTodo, id });
+    onAddTodo({ title: workingTodo, id, isCompleted: false });
     todoTitleInput.current.focus();
     setWorkingTodo('');
   };
-  
+
   return (
     <>
       <form onSubmit={handleAddTodo}>
