@@ -6,7 +6,7 @@ import TodoForm from './features/TodoForm';
 function App() {
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('aa');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -86,12 +86,62 @@ function App() {
     }
   };
 
-  const completeTodo = (id) => {
-    const updatedTodos = todoList.map((todo) => {
-      if (todo.id === id) return { ...todo, isCompleted: true };
-      return todo;
-    });
-    setTodoList([...updatedTodos]);
+  const completeTodo = async (id) => {
+    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+    const token = `Bearer ${import.meta.env.VITE_PAT}`;
+    const originalTodo = todoList.find((todo) => todo.id === id);
+
+    const payload = {
+      records: [
+        {
+          id: id,
+          fields: {
+            title: originalTodo.title,
+            isCompleted: true,
+          },
+        },
+      ],
+    };
+
+    const options = {
+      method: 'PATCH',
+      headers: {
+        Authorization: token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    };
+
+    try {
+      const resp = await fetch(url, options);
+      if (!resp.ok) {
+        throw new Error(resp.message);
+      }
+      const { records } = await resp.json();
+      const updatedTodo = {
+        id: records[0]['id'],
+        ...records[0].fields,
+      };
+
+      if (!records[0].fields.isCompleted) updatedTodo.isCompleted = false;
+
+      const updatedTodos = todoList.map((todo) => {
+        if (todo.id === updatedTodo.id) return { ...updatedTodo };
+        return todo;
+      });
+
+      setTodoList([...updatedTodos]);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(`${error.message}. Reverting todo...`);
+      const revertedTodos = todoList.map((todo) => {
+        if (todo.id === originalTodo.id) return { ...originalTodo };
+        return todo;
+      });
+      setTodoList([...revertedTodos]);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const updateTodo = async (editedTodo) => {
