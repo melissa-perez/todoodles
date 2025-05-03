@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
+import TodosViewForm from './features/TodosViewForm';
 import './App.css';
 
 const HTTP_METHOD = {
@@ -194,8 +195,15 @@ function App() {
         onUpdateTodo={updateTodo}
         isLoading={isLoading}
       />
+      <hr />
+      <TodosViewForm
+        sortDirection={sortDirection}
+        setSortDirection={setSortDirection}
+        sortField={sortField}
+        setSortField={setSortField}
+      />
       {errorMessage ? (
-        <>
+        <div>
           <hr />
           <p>{errorMessage}</p>
           <button
@@ -205,7 +213,7 @@ function App() {
           >
             Dismiss Error Message
           </button>
-        </>
+        </div>
       ) : (
         <></>
       )}
