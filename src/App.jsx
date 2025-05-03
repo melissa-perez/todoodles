@@ -1,7 +1,32 @@
 import { useState, useEffect } from 'react';
-import './App.css';
 import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
+import './App.css';
+
+const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+
+const HTTP_METHOD = {
+  GET: 'GET',
+  POST: 'POST',
+  PATCH: 'PATCH',
+};
+
+const createOptions = (action) => {
+  const token = `Bearer ${import.meta.env.VITE_PAT}`;
+
+  const options = {
+    method: action,
+    headers: {
+      Authorization: token,
+    },
+  };
+
+  if (action !== HTTP_METHOD.GET) {
+    options['headers']['Content-Type'] = 'application/json';
+  }
+
+  return options;
+};
 
 function App() {
   const [todoList, setTodoList] = useState([]);
@@ -9,75 +34,68 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-
-  const fetchTodos = async () => {  
-    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-    const token = `Bearer ${import.meta.env.VITE_PAT}`;
+  const fetchTodos = async () => {
     setIsLoading(true);
-    const options = {
-      method: 'GET',
-      headers: { Authorization: token, 'Content-Type': 'application/json' },
-    };
+    const options = createOptions(HTTP_METHOD.GET);
+
     try {
-      const resp = await fetch(url, options);
-      if (!resp.ok) {
-        throw new Error(resp.message);
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(response.message);
       }
-      const data = await resp.json();
-      const fetchedTodos = data.records.map((record) => {
+
+      const { records } = await response.json();
+      const fetchedTodos = records.map((record) => {
         const todo = {
           id: record.id,
           ...record.fields,
         };
         if (!todo.isCompleted) todo.isCompleted = false;
+
         return todo;
       });
+
       setTodoList([...fetchedTodos]);
     } catch (error) {
+      console.error(error);
       setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchTodos();
   }, []);
 
   const addTodo = async (newTodo) => {
-    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-    const token = `Bearer ${import.meta.env.VITE_PAT}`;
+    const options = createOptions(HTTP_METHOD.POST);
     const payload = {
       records: [
         {
           fields: {
             title: newTodo.title,
-
             isCompleted: newTodo.isCompleted,
           },
         },
       ],
     };
-    const options = {
-      method: 'POST',
-      headers: {
-        Authorization: token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    };
+    options['body'] = JSON.stringify(payload);
 
     try {
       setIsSaving(true);
-      const resp = await fetch(url, options);
-      if (!resp.ok) {
-        throw new Error(resp.message);
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(response.message);
       }
-      const { records } = await resp.json();
+
+      const { records } = await response.json();
       const savedTodo = {
         id: records[0].id,
         ...records[0].fields,
       };
       if (!records[0].fields.isCompleted) savedTodo.isCompleted = false;
+
       setTodoList([...todoList, savedTodo]);
     } catch (error) {
       console.error(error);
@@ -88,10 +106,8 @@ function App() {
   };
 
   const completeTodo = async (id) => {
-    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-    const token = `Bearer ${import.meta.env.VITE_PAT}`;
+    const options = createOptions(HTTP_METHOD.PATCH);
     const originalTodo = todoList.find((todo) => todo.id === id);
-
     const payload = {
       records: [
         {
@@ -103,27 +119,19 @@ function App() {
         },
       ],
     };
-
-    const options = {
-      method: 'PATCH',
-      headers: {
-        Authorization: token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    };
+    options['body'] = JSON.stringify(payload);
 
     try {
-      const resp = await fetch(url, options);
-      if (!resp.ok) {
-        throw new Error(resp.message);
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(response.message);
       }
-      const { records } = await resp.json();
+
+      const { records } = await response.json();
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
       };
-
       if (!records[0].fields.isCompleted) updatedTodo.isCompleted = false;
 
       const updatedTodos = todoList.map((todo) => {
@@ -135,10 +143,12 @@ function App() {
     } catch (error) {
       console.error(error);
       setErrorMessage(`${error.message}. Reverting todo...`);
+
       const revertedTodos = todoList.map((todo) => {
         if (todo.id === originalTodo.id) return { ...originalTodo };
         return todo;
       });
+
       setTodoList([...revertedTodos]);
     } finally {
       setIsSaving(false);
@@ -146,8 +156,7 @@ function App() {
   };
 
   const updateTodo = async (editedTodo) => {
-    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-    const token = `Bearer ${import.meta.env.VITE_PAT}`;
+    const options = createOptions(HTTP_METHOD.PATCH);
     const originalTodo = todoList.find((todo) => todo.id === editedTodo.id);
 
     const payload = {
@@ -161,27 +170,19 @@ function App() {
         },
       ],
     };
-
-    const options = {
-      method: 'PATCH',
-      headers: {
-        Authorization: token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    };
+    options['body'] = JSON.stringify(payload);
 
     try {
-      const resp = await fetch(url, options);
-      if (!resp.ok) {
-        throw new Error(resp.message);
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(response.message);
       }
-      const { records } = await resp.json();
+
+      const { records } = await response.json();
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
       };
-
       if (!records[0].fields.isCompleted) updatedTodo.isCompleted = false;
 
       const updatedTodos = todoList.map((todo) => {
@@ -197,6 +198,7 @@ function App() {
         if (todo.id === originalTodo.id) return { ...originalTodo };
         return todo;
       });
+
       setTodoList([...revertedTodos]);
     } finally {
       setIsSaving(false);
