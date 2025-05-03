@@ -13,19 +13,25 @@ const HTTP_METHOD = {
 
 const createOptions = (action) => {
   const token = `Bearer ${import.meta.env.VITE_PAT}`;
-
   const options = {
     method: action,
     headers: {
       Authorization: token,
     },
   };
-
   if (action !== HTTP_METHOD.GET) {
     options['headers']['Content-Type'] = 'application/json';
   }
-
   return options;
+};
+
+const requestAction = async (options) => {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(response.message);
+  }
+  const { records } = await response.json();
+  return records;
 };
 
 function App() {
@@ -37,24 +43,16 @@ function App() {
   const fetchTodos = async () => {
     setIsLoading(true);
     const options = createOptions(HTTP_METHOD.GET);
-
     try {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(response.message);
-      }
-
-      const { records } = await response.json();
+      const records = await requestAction(options);
       const fetchedTodos = records.map((record) => {
         const todo = {
           id: record.id,
           ...record.fields,
         };
         if (!todo.isCompleted) todo.isCompleted = false;
-
         return todo;
       });
-
       setTodoList([...fetchedTodos]);
     } catch (error) {
       console.error(error);
@@ -63,7 +61,6 @@ function App() {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -81,21 +78,14 @@ function App() {
       ],
     };
     options['body'] = JSON.stringify(payload);
-
     try {
       setIsSaving(true);
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(response.message);
-      }
-
-      const { records } = await response.json();
+      const records = await requestAction(options);
       const savedTodo = {
         id: records[0].id,
         ...records[0].fields,
       };
       if (!records[0].fields.isCompleted) savedTodo.isCompleted = false;
-
       setTodoList([...todoList, savedTodo]);
     } catch (error) {
       console.error(error);
@@ -120,35 +110,25 @@ function App() {
       ],
     };
     options['body'] = JSON.stringify(payload);
-
     try {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(response.message);
-      }
-
-      const { records } = await response.json();
+      const records = await requestAction(options);
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
       };
       if (!records[0].fields.isCompleted) updatedTodo.isCompleted = false;
-
       const updatedTodos = todoList.map((todo) => {
         if (todo.id === updatedTodo.id) return { ...updatedTodo };
         return todo;
       });
-
       setTodoList([...updatedTodos]);
     } catch (error) {
       console.error(error);
       setErrorMessage(`${error.message}. Reverting todo...`);
-
       const revertedTodos = todoList.map((todo) => {
         if (todo.id === originalTodo.id) return { ...originalTodo };
         return todo;
       });
-
       setTodoList([...revertedTodos]);
     } finally {
       setIsSaving(false);
@@ -158,7 +138,6 @@ function App() {
   const updateTodo = async (editedTodo) => {
     const options = createOptions(HTTP_METHOD.PATCH);
     const originalTodo = todoList.find((todo) => todo.id === editedTodo.id);
-
     const payload = {
       records: [
         {
@@ -171,25 +150,17 @@ function App() {
       ],
     };
     options['body'] = JSON.stringify(payload);
-
     try {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(response.message);
-      }
-
-      const { records } = await response.json();
+      const records = await requestAction(options);
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
       };
       if (!records[0].fields.isCompleted) updatedTodo.isCompleted = false;
-
       const updatedTodos = todoList.map((todo) => {
         if (todo.id === updatedTodo.id) return { ...updatedTodo };
         return todo;
       });
-
       setTodoList([...updatedTodos]);
     } catch (error) {
       console.error(error);
@@ -198,7 +169,6 @@ function App() {
         if (todo.id === originalTodo.id) return { ...originalTodo };
         return todo;
       });
-
       setTodoList([...revertedTodos]);
     } finally {
       setIsSaving(false);
