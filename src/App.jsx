@@ -3,8 +3,6 @@ import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
 import './App.css';
 
-const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-
 const HTTP_METHOD = {
   GET: 'GET',
   POST: 'POST',
@@ -25,8 +23,17 @@ const createOptions = (action) => {
   return options;
 };
 
-const requestAction = async (options) => {
-  const response = await fetch(url, options);
+const encodeUrl = ({ sortField, sortDirection }) => {
+  const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+  let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
+  return encodeURI(`${url}?${sortQuery}`);
+};
+
+const requestAction = async (options, sortDirection, sortField) => {
+  const response = await fetch(
+    encodeUrl({ sortDirection, sortField }),
+    options
+  );
   if (!response.ok) {
     throw new Error(response.message);
   }
@@ -39,31 +46,33 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [sortField, setSortField] = useState('createdTime');
+  const [sortDirection, setSortDirection] = useState('desc');
 
-  const fetchTodos = async () => {
-    setIsLoading(true);
-    const options = createOptions(HTTP_METHOD.GET);
-    try {
-      const records = await requestAction(options);
-      const fetchedTodos = records.map((record) => {
-        const todo = {
-          id: record.id,
-          ...record.fields,
-        };
-        if (!todo.isCompleted) todo.isCompleted = false;
-        return todo;
-      });
-      setTodoList([...fetchedTodos]);
-    } catch (error) {
-      console.error(error);
-      setErrorMessage(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   useEffect(() => {
+    const fetchTodos = async () => {
+      setIsLoading(true);
+      const options = createOptions(HTTP_METHOD.GET);
+      try {
+        const records = await requestAction(options, sortDirection, sortField);
+        const fetchedTodos = records.map((record) => {
+          const todo = {
+            id: record.id,
+            ...record.fields,
+          };
+          if (!todo.isCompleted) todo.isCompleted = false;
+          return todo;
+        });
+        setTodoList([...fetchedTodos]);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchTodos();
-  }, []);
+  }, [sortField, sortDirection]);
 
   const addTodo = async (newTodo) => {
     const options = createOptions(HTTP_METHOD.POST);
