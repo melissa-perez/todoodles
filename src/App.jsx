@@ -24,15 +24,23 @@ const createOptions = (action) => {
   return options;
 };
 
-const encodeUrl = ({ sortField, sortDirection }) => {
+const encodeUrl = ({ sortField, sortDirection, queryString }) => {
   const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+  let searchQuery = '';
   let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
-  return encodeURI(`${url}?${sortQuery}`);
+  if (queryString)
+    searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
+  return encodeURI(`${url}?${sortQuery}${searchQuery}`);
 };
 
-const requestAction = async (options, sortDirection, sortField) => {
+const requestAction = async (
+  options,
+  sortDirection,
+  sortField,
+  queryString
+) => {
   const response = await fetch(
-    encodeUrl({ sortDirection, sortField }),
+    encodeUrl({ sortField, sortDirection, queryString }),
     options
   );
   if (!response.ok) {
@@ -49,13 +57,19 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [sortField, setSortField] = useState('createdTime');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [queryString, setQueryString] = useState('');
 
   useEffect(() => {
     const fetchTodos = async () => {
       setIsLoading(true);
       const options = createOptions(HTTP_METHOD.GET);
       try {
-        const records = await requestAction(options, sortDirection, sortField);
+        const records = await requestAction(
+          options,
+          sortDirection,
+          sortField,
+          queryString
+        );
         const fetchedTodos = records.map((record) => {
           const todo = {
             id: record.id,
@@ -73,7 +87,7 @@ function App() {
       }
     };
     fetchTodos();
-  }, [sortField, sortDirection]);
+  }, [sortField, sortDirection, queryString]);
 
   const addTodo = async (newTodo) => {
     const options = createOptions(HTTP_METHOD.POST);
@@ -201,6 +215,8 @@ function App() {
         setSortDirection={setSortDirection}
         sortField={sortField}
         setSortField={setSortField}
+        queryString={queryString}
+        setQueryString={setQueryString}
       />
       {errorMessage ? (
         <div>
