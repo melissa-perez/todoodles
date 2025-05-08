@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import TextInputWithLabel from '../shared/TextInputWithLabel';
 
 function TodosViewForm({
@@ -8,25 +9,34 @@ function TodosViewForm({
   queryString,
   setQueryString,
 }) {
+  const [localQueryString, setLocalQueryString] = useState(queryString);
   const preventRefresh = (event) => {
     event.preventDefault();
   };
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      setQueryString(localQueryString);
+    }, 500);
+    return () => {
+      clearTimeout(debounce);
+    };
+  }, [localQueryString, setQueryString]);
   return (
     <>
       <div>
         <TextInputWithLabel
           elementId="todoSearch"
           label="Search todos:"
-          value={queryString}
+          value={localQueryString}
           onChange={(event) => {
-            setQueryString(event.target.value);
+            setLocalQueryString(event.target.value);
           }}
           ref={null}
         />
         <button
           type="button"
           onClick={() => {
-            setQueryString('');
+            setLocalQueryString('');
           }}
         >
           Clear
