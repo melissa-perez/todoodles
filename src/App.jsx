@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
 import TodosViewForm from './features/TodosViewForm';
@@ -24,32 +24,6 @@ const createOptions = (action) => {
   return options;
 };
 
-const encodeUrl = ({ sortField, sortDirection, queryString }) => {
-  const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-  let searchQuery = '';
-  let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
-  if (queryString)
-    searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
-  return encodeURI(`${url}?${sortQuery}${searchQuery}`);
-};
-
-const requestAction = async (
-  options,
-  sortDirection,
-  sortField,
-  queryString
-) => {
-  const response = await fetch(
-    encodeUrl({ sortField, sortDirection, queryString }),
-    options
-  );
-  if (!response.ok) {
-    throw new Error(response.message);
-  }
-  const { records } = await response.json();
-  return records;
-};
-
 function App() {
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,18 +32,25 @@ function App() {
   const [sortField, setSortField] = useState('createdTime');
   const [sortDirection, setSortDirection] = useState('desc');
   const [queryString, setQueryString] = useState('');
+  const encodeUrl = useCallback(() => {
+    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+    let searchQuery = '';
+    let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
+    if (queryString)
+      searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
+    return encodeURI(`${url}?${sortQuery}${searchQuery}`);
+  }, [queryString, sortDirection, sortField]);
 
   useEffect(() => {
     const fetchTodos = async () => {
       setIsLoading(true);
       const options = createOptions(HTTP_METHOD.GET);
       try {
-        const records = await requestAction(
-          options,
-          sortDirection,
-          sortField,
-          queryString
-        );
+        const response = await fetch(encodeUrl(), options);
+        if (!response.ok) {
+          throw new Error(response.message);
+        }
+        const { records } = await response.json();
         const fetchedTodos = records.map((record) => {
           const todo = {
             id: record.id,
@@ -87,7 +68,7 @@ function App() {
       }
     };
     fetchTodos();
-  }, [sortField, sortDirection, queryString]);
+  }, [sortField, sortDirection, queryString, encodeUrl]);
 
   const addTodo = async (newTodo) => {
     const options = createOptions(HTTP_METHOD.POST);
@@ -104,7 +85,11 @@ function App() {
     options['body'] = JSON.stringify(payload);
     try {
       setIsSaving(true);
-      const records = await requestAction(options);
+      const response = await fetch(encodeUrl(), options);
+      if (!response.ok) {
+        throw new Error(response.message);
+      }
+      const { records } = await response.json();
       const savedTodo = {
         id: records[0].id,
         ...records[0].fields,
@@ -135,7 +120,11 @@ function App() {
     };
     options['body'] = JSON.stringify(payload);
     try {
-      const records = await requestAction(options);
+      const response = await fetch(encodeUrl(), options);
+      if (!response.ok) {
+        throw new Error(response.message);
+      }
+      const { records } = await response.json();
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
@@ -175,7 +164,11 @@ function App() {
     };
     options['body'] = JSON.stringify(payload);
     try {
-      const records = await requestAction(options);
+      const response = await fetch(encodeUrl(), options);
+      if (!response.ok) {
+        throw new Error(response.message);
+      }
+      const { records } = await response.json();
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
