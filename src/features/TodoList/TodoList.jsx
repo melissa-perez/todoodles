@@ -1,12 +1,18 @@
 import TodoListItem from './TodoListItem';
 
-function TodoList({ todos, onCompleteTodo, onUpdateTodo }) {
+function TodoList({ todos, onCompleteTodo, onUpdateTodo, isLoading }) {
   const filteredTodoList = todos.filter((todo) => todo.isCompleted === false);
-  
+
   return (
     <>
       {filteredTodoList.length === 0 ? (
-        <p>Add todo above to get started</p>
+        <>
+          {isLoading ? (
+            <p>Todo list loading...</p>
+          ) : (
+            <p>Add todo above to get started</p>
+          )}
+        </>
       ) : (
         <ul>
           {filteredTodoList.map((todo) => (
