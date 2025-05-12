@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
+import TodosViewForm from './features/TodosViewForm';
 import './App.css';
-
-const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
 
 const HTTP_METHOD = {
   GET: 'GET',
@@ -25,45 +24,51 @@ const createOptions = (action) => {
   return options;
 };
 
-const requestAction = async (options) => {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error(response.message);
-  }
-  const { records } = await response.json();
-  return records;
-};
-
 function App() {
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [sortField, setSortField] = useState('createdTime');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [queryString, setQueryString] = useState('');
+  const encodeUrl = useCallback(() => {
+    const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
+    let searchQuery = '';
+    let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
+    if (queryString)
+      searchQuery = `&filterByFormula=SEARCH("${queryString}",+title)`;
+    return encodeURI(`${url}?${sortQuery}${searchQuery}`);
+  }, [queryString, sortDirection, sortField]);
 
-  const fetchTodos = async () => {
-    setIsLoading(true);
-    const options = createOptions(HTTP_METHOD.GET);
-    try {
-      const records = await requestAction(options);
-      const fetchedTodos = records.map((record) => {
-        const todo = {
-          id: record.id,
-          ...record.fields,
-        };
-        if (!todo.isCompleted) todo.isCompleted = false;
-        return todo;
-      });
-      setTodoList([...fetchedTodos]);
-    } catch (error) {
-      console.error(error);
-      setErrorMessage(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   useEffect(() => {
+    const fetchTodos = async () => {
+      setIsLoading(true);
+      const options = createOptions(HTTP_METHOD.GET);
+      try {
+        const response = await fetch(encodeUrl(), options);
+        if (!response.ok) {
+          throw new Error(response.message);
+        }
+        const { records } = await response.json();
+        const fetchedTodos = records.map((record) => {
+          const todo = {
+            id: record.id,
+            ...record.fields,
+          };
+          if (!todo.isCompleted) todo.isCompleted = false;
+          return todo;
+        });
+        setTodoList([...fetchedTodos]);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchTodos();
-  }, []);
+  }, [sortField, sortDirection, queryString, encodeUrl]);
 
   const addTodo = async (newTodo) => {
     const options = createOptions(HTTP_METHOD.POST);
@@ -80,7 +85,11 @@ function App() {
     options['body'] = JSON.stringify(payload);
     try {
       setIsSaving(true);
-      const records = await requestAction(options);
+      const response = await fetch(encodeUrl(), options);
+      if (!response.ok) {
+        throw new Error(response.message);
+      }
+      const { records } = await response.json();
       const savedTodo = {
         id: records[0].id,
         ...records[0].fields,
@@ -111,7 +120,11 @@ function App() {
     };
     options['body'] = JSON.stringify(payload);
     try {
-      const records = await requestAction(options);
+      const response = await fetch(encodeUrl(), options);
+      if (!response.ok) {
+        throw new Error(response.message);
+      }
+      const { records } = await response.json();
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
@@ -151,7 +164,11 @@ function App() {
     };
     options['body'] = JSON.stringify(payload);
     try {
-      const records = await requestAction(options);
+      const response = await fetch(encodeUrl(), options);
+      if (!response.ok) {
+        throw new Error(response.message);
+      }
+      const { records } = await response.json();
       const updatedTodo = {
         id: records[0]['id'],
         ...records[0].fields,
@@ -185,8 +202,17 @@ function App() {
         onUpdateTodo={updateTodo}
         isLoading={isLoading}
       />
+      <hr />
+      <TodosViewForm
+        sortDirection={sortDirection}
+        setSortDirection={setSortDirection}
+        sortField={sortField}
+        setSortField={setSortField}
+        queryString={queryString}
+        setQueryString={setQueryString}
+      />
       {errorMessage ? (
-        <>
+        <div>
           <hr />
           <p>{errorMessage}</p>
           <button
@@ -196,7 +222,7 @@ function App() {
           >
             Dismiss Error Message
           </button>
-        </>
+        </div>
       ) : (
         <></>
       )}
