@@ -1,0 +1,33 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+    'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color: #4a6e8c;
+}
+
+span {
+  font-family: 'Courier New', Courier, monospace;
+  color: #f7c1a1;
+}
+
+body {
+  background-color: #181935;
+}
+
+button {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+input {
+  border-color: #a1c1d4;
+}
+
+label {
+  font-weight: bold;
+  color: #f9e3ae;
+}
