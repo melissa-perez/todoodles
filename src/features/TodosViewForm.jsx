@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 import TextInputWithLabel from '../shared/TextInputWithLabel';
+import styled from 'styled-components';
+
+const StyledTodosViewForm = styled.form`
+  margin: 0.2em 0.5em;
+  padding: 1em 2em;
+`;
 
 function TodosViewForm({
   sortField,
@@ -21,6 +27,7 @@ function TodosViewForm({
       clearTimeout(debounce);
     };
   }, [localQueryString, setQueryString]);
+
   return (
     <>
       <div>
@@ -43,7 +50,7 @@ function TodosViewForm({
         </button>
       </div>
       <div>
-        <form onSubmit={preventRefresh}>
+        <StyledTodosViewForm onSubmit={preventRefresh}>
           <label htmlFor="sort">Sort by</label>
           <select
             name="sort"
@@ -64,7 +71,7 @@ function TodosViewForm({
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
-        </form>
+        </StyledTodosViewForm>
       </div>
     </>
   );
