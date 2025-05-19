@@ -3,6 +3,7 @@ import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
 import TodosViewForm from './features/TodosViewForm';
 import './App.css';
+import styles from './App.module.css';
 
 const HTTP_METHOD = {
   GET: 'GET',
@@ -193,7 +194,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className={styles.center}>
       <h1>Todoodles</h1>
       <TodoForm onAddTodo={addTodo} isSaving={isSaving} />
       <TodoList
@@ -212,7 +213,7 @@ function App() {
         setQueryString={setQueryString}
       />
       {errorMessage ? (
-        <div>
+        <div className={styles.errorBorder}>
           <hr />
           <p>{errorMessage}</p>
           <button
