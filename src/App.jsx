@@ -3,6 +3,8 @@ import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
 import TodosViewForm from './features/TodosViewForm';
 import './App.css';
+import styles from './App.module.css';
+import todolist from '../src/assets/list_3176366.png';
 
 const HTTP_METHOD = {
   GET: 'GET',
@@ -193,7 +195,9 @@ function App() {
   };
 
   return (
-    <div>
+    <div className={styles.center}>
+      <img src={todolist} alt="checklist image" width={100} height={100} />
+
       <h1>Todoodles</h1>
       <TodoForm onAddTodo={addTodo} isSaving={isSaving} />
       <TodoList
@@ -212,7 +216,7 @@ function App() {
         setQueryString={setQueryString}
       />
       {errorMessage ? (
-        <div>
+        <div className={styles.errorBorder}>
           <hr />
           <p>{errorMessage}</p>
           <button
