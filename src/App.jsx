@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useReducer } from 'react';
 import TodoList from './features/TodoList/TodoList';
 import TodoForm from './features/TodoForm';
 import TodosViewForm from './features/TodosViewForm';
 import './App.css';
 import styles from './App.module.css';
 import todolist from '../src/assets/list_3176366.png';
+import {
+  reducer as todosReducer,
+  actions as todoActions,
+  initialState as initialTodoState,
+} from './reducers/todos.reducer';
 
 const HTTP_METHOD = {
   GET: 'GET',
@@ -27,6 +32,7 @@ const createOptions = (action) => {
 };
 
 function App() {
+  const [todoState, dispatch] = useReducer(todosReducer, initialTodoState);
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -34,6 +40,7 @@ function App() {
   const [sortField, setSortField] = useState('createdTime');
   const [sortDirection, setSortDirection] = useState('desc');
   const [queryString, setQueryString] = useState('');
+
   const encodeUrl = useCallback(() => {
     const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
     let searchQuery = '';
