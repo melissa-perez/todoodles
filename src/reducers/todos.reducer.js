@@ -22,11 +22,22 @@ const actions = {
 const reducer = (state = initialState, action) => {
     switch (action.type) {
         case actions.fetchTodos:
-            return { ...state };
+            return { ...state, isLoading: true };
         case actions.loadTodos:
-            return { ...state };
+            return {
+                ...state,
+                isLoading: false,
+                todoList: action.records.map((record) => {
+                    const todo = {
+                        id: record.id,
+                        ...record.fields,
+                    };
+                    if (!todo.isCompleted) todo.isCompleted = false;
+                    return todo;
+                })
+            };
         case actions.setLoadError:
-            return { ...state };
+            return { ...state, isLoading: false, errorMessage: action.error.message };
         case actions.startRequest:
             return { ...state };
         case actions.addTodo:
