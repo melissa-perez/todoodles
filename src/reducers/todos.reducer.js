@@ -23,27 +23,37 @@ const reducer = (state = initialState, action) => {
     switch (action.type) {
         case actions.fetchTodos:
             return { ...state, isLoading: true };
-        case actions.loadTodos:
+        case actions.loadTodos: {
+            const fetchedTodos = action.records.map((record) => {
+                const todo = {
+                    id: record.id,
+                    ...record.fields,
+                };
+                if (!todo.isCompleted) todo.isCompleted = false;
+                return todo;
+            });
             return {
                 ...state,
                 isLoading: false,
-                todoList: action.records.map((record) => {
-                    const todo = {
-                        id: record.id,
-                        ...record.fields,
-                    };
-                    if (!todo.isCompleted) todo.isCompleted = false;
-                    return todo;
-                })
+                todoList: fetchedTodos
             };
+        }
         case actions.setLoadError:
             return { ...state, isLoading: false, errorMessage: action.error.message };
         case actions.startRequest:
-            return { ...state };
+            return { ...state, isSaving: true };
         case actions.addTodo:
-            return { ...state };
+            {
+                const savedTodo = {
+                    id: action.records[0].id,
+                    ...action.records[0].fields,
+                };
+                if (!action.records[0].fields.isCompleted) savedTodo.isCompleted = false;
+
+                return { ...state, isSaving: false, todoList: [...state.todoList, savedTodo] };
+            }
         case actions.endRequest:
-            return { ...state };
+            return { ...state, isLoading: false, isSaving: false };
         case actions.updateTodo:
             return { ...state };
         case actions.completeTodo:
@@ -51,7 +61,7 @@ const reducer = (state = initialState, action) => {
         case actions.revertTodo:
             return { ...state };
         case actions.clearError:
-            return { ...state };
+            return { ...state, errorMessage: "" };
     }
 
 };
