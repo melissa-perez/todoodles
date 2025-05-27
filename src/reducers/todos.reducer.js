@@ -54,12 +54,27 @@ const reducer = (state = initialState, action) => {
             }
         case actions.endRequest:
             return { ...state, isLoading: false, isSaving: false };
-        case actions.updateTodo:
-            return { ...state };
-        case actions.completeTodo:
-            return { ...state };
-        case actions.revertTodo:
-            return { ...state };
+        case actions.updateTodo: {
+            const updatedTodos = state.todoList.map((todo) => {
+                if (todo.id === action.payload.id) return { ...action.payload };
+                return todo;
+            }); return { ...state, todoList: updatedTodos };
+        }
+        case actions.completeTodo: {
+            const updatedTodos = state.todoList.map((todo) => {
+                if (todo.id === action.payload.id) return { ...todo, isCompleted: true };
+                return todo;
+            });
+            return { ...state, todoList: updatedTodos };
+        }
+        case actions.revertTodo: {
+            const revertedTodos = state.todoList.map((todo) => {
+                if (todo.id === action.payload.id) return { ...action.payload };
+                return todo;
+            });
+            return { ...state, errorMessage: action.error.message, todoList: revertedTodos };
+        }
+
         case actions.clearError:
             return { ...state, errorMessage: "" };
     }
