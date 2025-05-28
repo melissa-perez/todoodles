@@ -24,6 +24,7 @@ const reducer = (state = initialState, action) => {
         case actions.fetchTodos:
             return { ...state, isLoading: true };
         case actions.loadTodos: {
+            console.log(action);
             const fetchedTodos = action.records.map((record) => {
                 const todo = {
                     id: record.id,
@@ -55,6 +56,8 @@ const reducer = (state = initialState, action) => {
         case actions.endRequest:
             return { ...state, isLoading: false, isSaving: false };
         case actions.updateTodo: {
+            console.log(action);
+
             const updatedTodos = state.todoList.map((todo) => {
                 if (todo.id === action.payload.id) return { ...action.payload };
                 return todo;
@@ -82,4 +85,4 @@ const reducer = (state = initialState, action) => {
 };
 
 
-export { initialState, actions };
+export { reducer, initialState, actions };
