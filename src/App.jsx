@@ -53,7 +53,8 @@ function App() {
       try {
         const response = await fetch(encodeUrl(), options);
         if (!response.ok) {
-          throw new Error(response.message);
+          const errorMsg = response?.message || 'Something went wrong';
+          throw new Error(errorMsg);
         }
         const { records } = await response.json();
         dispatch({ type: todoActions.loadTodos, records });
@@ -81,7 +82,8 @@ function App() {
       dispatch({ type: todoActions.startRequest });
       const response = await fetch(encodeUrl(), options);
       if (!response.ok) {
-        throw new Error(response.message);
+        const errorMsg = response?.message || 'Something went wrong';
+        throw new Error(errorMsg);
       }
       const { records } = await response.json();
       dispatch({ type: todoActions.addTodo, records });
@@ -108,7 +110,8 @@ function App() {
     try {
       const response = await fetch(encodeUrl(), options);
       if (!response.ok) {
-        throw new Error(response.message);
+        const errorMsg = response?.message || 'Something went wrong';
+        throw new Error(errorMsg);
       }
       dispatch({ type: todoActions.completeTodo, id });
     } catch (error) {
@@ -142,7 +145,8 @@ function App() {
     try {
       const response = await fetch(encodeUrl(), options);
       if (!response.ok) {
-        throw new Error(response.message);
+        const errorMsg = response?.message || 'Something went wrong';
+        throw new Error(errorMsg);
       }
       const { records } = await response.json();
       const updatedTodo = {
