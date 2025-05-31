@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useReducer } from 'react';
-import TodoList from './features/TodoList/TodoList';
-import TodoForm from './features/TodoForm';
-import TodosViewForm from './features/TodosViewForm';
+
 import './App.css';
 import styles from './App.module.css';
 import todolist from '../src/assets/list_3176366.png';
@@ -169,24 +167,7 @@ function App() {
   return (
     <div className={styles.center}>
       <img src={todolist} alt="checklist image" width={100} height={100} />
-
       <h1>Todoodles</h1>
-      <TodoForm onAddTodo={addTodo} isSaving={todoState.isSaving} />
-      <TodoList
-        todos={todoState.todoList}
-        onCompleteTodo={completeTodo}
-        onUpdateTodo={updateTodo}
-        isLoading={todoState.isLoading}
-      />
-      <hr />
-      <TodosViewForm
-        sortDirection={sortDirection}
-        setSortDirection={setSortDirection}
-        sortField={sortField}
-        setSortField={setSortField}
-        queryString={queryString}
-        setQueryString={setQueryString}
-      />
       {todoState.errorMessage ? (
         <div className={styles.errorBorder}>
           <hr />
