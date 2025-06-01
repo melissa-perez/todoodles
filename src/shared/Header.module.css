@@ -1,0 +1,37 @@
+.container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.heading {
+  text-align: center;
+  display: block;
+  margin: 1rem auto;
+}
+
+.nav {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.active {
+  color: gray;
+  text-decoration: underline;
+}
+
+.inactive {
+  color: black;
+  text-decoration: none;
+}
+
+.inactive,
+.inactive:visited {
+  color: black;
+  text-decoration: none;
+}

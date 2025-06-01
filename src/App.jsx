@@ -1,13 +1,19 @@
 import { useState, useEffect, useCallback, useReducer } from 'react';
+import { Route, Routes, useLocation } from 'react-router';
 
-import './App.css';
-import styles from './App.module.css';
-import todolist from '../src/assets/list_3176366.png';
 import {
   reducer as todosReducer,
   actions as todoActions,
   initialState as initialTodoState,
 } from './reducers/todos.reducer';
+
+import TodosPage from './pages/TodosPage';
+
+import Header from './shared/Header';
+
+import './App.css';
+import styles from './App.module.css';
+import todolist from '../src/assets/list_3176366.png';
 
 const HTTP_METHOD = {
   GET: 'GET',
@@ -34,6 +40,7 @@ function App() {
   const [sortField, setSortField] = useState('createdTime');
   const [sortDirection, setSortDirection] = useState('desc');
   const [queryString, setQueryString] = useState('');
+  const location = useLocation();
 
   const encodeUrl = useCallback(() => {
     const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
@@ -44,6 +51,18 @@ function App() {
     return encodeURI(`${url}?${sortQuery}${searchQuery}`);
   }, [queryString, sortDirection, sortField]);
 
+  useEffect(() => {
+    switch (location.pathname) {
+      case '/':
+        document.title = 'Todo List';
+        break;
+      case '/about':
+        document.title = 'About';
+        break;
+      default:
+        document.title = 'Not Found';
+    }
+  }, [location]);
   useEffect(() => {
     const fetchTodos = async () => {
       dispatch({ type: todoActions.fetchTodos });
@@ -165,9 +184,39 @@ function App() {
   };
 
   return (
-    <div className={styles.center}>
-      <img src={todolist} alt="checklist image" width={100} height={100} />
-      <h1>Todoodles</h1>
+    <>
+      <img
+        src={todolist}
+        alt="checklist image"
+        width={100}
+        height={100}
+        className={styles.center}
+      />
+      <Header title="Todo List" />
+
+      <div className={styles.center}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <TodosPage
+                todoState={todoState}
+                completeTodo={completeTodo}
+                updateTodo={updateTodo}
+                addTodo={addTodo}
+                sortField={sortField}
+                setSortField={setSortField}
+                sortDirection={sortDirection}
+                setSortDirection={setSortDirection}
+                queryString={queryString}
+                setQueryString={setQueryString}
+              />
+            }
+          />
+          <Route path="/about" element={<h1>About</h1>} />
+          <Route path="*" element={<h1>Not Found</h1>} />
+        </Routes>
+      </div>
       {todoState.errorMessage ? (
         <div className={styles.errorBorder}>
           <hr />
@@ -183,7 +232,7 @@ function App() {
       ) : (
         <></>
       )}
-    </div>
+    </>
   );
 }
 
