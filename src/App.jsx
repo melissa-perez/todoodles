@@ -42,6 +42,7 @@ function App() {
   const [sortField, setSortField] = useState('createdTime');
   const [sortDirection, setSortDirection] = useState('desc');
   const [queryString, setQueryString] = useState('');
+  const [title, setTitle] = useState('');
   const location = useLocation();
 
   const encodeUrl = useCallback(() => {
@@ -56,13 +57,13 @@ function App() {
   useEffect(() => {
     switch (location.pathname) {
       case '/':
-        document.title = 'Todo List';
+        setTitle('Todo List');
         break;
       case '/about':
-        document.title = 'About';
+        setTitle('About');
         break;
       default:
-        document.title = 'Not Found';
+        setTitle('Not Found');
     }
   }, [location]);
   useEffect(() => {
@@ -194,7 +195,7 @@ function App() {
         height={100}
         className={styles.center}
       />
-      <Header title="Todo List" />
+      <Header title={title} />
 
       <div className={styles.center}>
         <Routes>
