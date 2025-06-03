@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useNavigate } from 'react-router';
+import { useEffect } from 'react';
 
 import TodoListItem from './TodoListItem';
 
@@ -6,11 +7,32 @@ import styles from './TodoList.module.css';
 
 function TodoList({ todos, onCompleteTodo, onUpdateTodo, isLoading }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const filteredTodoList = todos.filter((todo) => todo.isCompleted === false);
   const itemsPerPage = 15;
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const indexOfFirstTodo = (currentPage - 1) * itemsPerPage;
   const totalPages = Math.ceil(filteredTodoList.length / itemsPerPage);
+  const currentTodos = filteredTodoList.slice(
+    indexOfFirstTodo,
+    indexOfFirstTodo + itemsPerPage
+  );
+
+  useEffect(() => {
+    if (isNaN(currentPage) || currentPage < 1 || currentPage > totalPages) {
+      navigate('/');
+    }
+  }, [currentPage, totalPages, navigate]);
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setSearchParams({ page: (currentPage - 1).toString() });
+    }
+  };
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setSearchParams({ page: (currentPage + 1).toString() });
+    }
+  };
   return (
     <>
       {filteredTodoList.length === 0 ? (
@@ -24,7 +46,7 @@ function TodoList({ todos, onCompleteTodo, onUpdateTodo, isLoading }) {
       ) : (
         <>
           <ul className={styles.listItem}>
-            {filteredTodoList.map((todo) => (
+            {currentTodos.map((todo) => (
               <TodoListItem
                 todo={todo}
                 key={todo.id}
@@ -34,11 +56,21 @@ function TodoList({ todos, onCompleteTodo, onUpdateTodo, isLoading }) {
             ))}
           </ul>
           <div>
-            <button>Previous</button>
+            <button
+              onClick={() => handlePreviousPage()}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
             <span>
               Page {currentPage} of {totalPages}
             </span>
-            <button>Next</button>
+            <button
+              onClick={() => handleNextPage()}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
           </div>
         </>
       )}
