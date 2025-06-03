@@ -19,8 +19,10 @@ function TodoList({ todos, onCompleteTodo, onUpdateTodo, isLoading }) {
   );
 
   useEffect(() => {
-    if (isNaN(currentPage) || currentPage < 1 || currentPage > totalPages) {
-      navigate('/');
+    if (totalPages > 0) {
+      if (isNaN(currentPage) || currentPage < 1 || currentPage > totalPages) {
+        navigate('/');
+      }
     }
   }, [currentPage, totalPages, navigate]);
   const handlePreviousPage = () => {
