@@ -1,15 +1,21 @@
 import { useState, useEffect, useCallback, useReducer } from 'react';
-import TodoList from './features/TodoList/TodoList';
-import TodoForm from './features/TodoForm';
-import TodosViewForm from './features/TodosViewForm';
-import './App.css';
-import styles from './App.module.css';
-import todolist from '../src/assets/list_3176366.png';
+import { Route, Routes, useLocation } from 'react-router';
+
 import {
   reducer as todosReducer,
   actions as todoActions,
   initialState as initialTodoState,
 } from './reducers/todos.reducer';
+
+import TodosPage from './pages/TodosPage';
+
+import Header from './shared/Header';
+
+import './App.css';
+import styles from './App.module.css';
+import todolist from '../src/assets/list_3176366.png';
+import AboutPage from './pages/AboutPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const HTTP_METHOD = {
   GET: 'GET',
@@ -36,6 +42,8 @@ function App() {
   const [sortField, setSortField] = useState('createdTime');
   const [sortDirection, setSortDirection] = useState('desc');
   const [queryString, setQueryString] = useState('');
+  const [title, setTitle] = useState('');
+  const location = useLocation();
 
   const encodeUrl = useCallback(() => {
     const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
@@ -46,6 +54,18 @@ function App() {
     return encodeURI(`${url}?${sortQuery}${searchQuery}`);
   }, [queryString, sortDirection, sortField]);
 
+  useEffect(() => {
+    switch (location.pathname) {
+      case '/':
+        setTitle('Todo List');
+        break;
+      case '/about':
+        setTitle('About');
+        break;
+      default:
+        setTitle('Not Found');
+    }
+  }, [location]);
   useEffect(() => {
     const fetchTodos = async () => {
       dispatch({ type: todoActions.fetchTodos });
@@ -167,26 +187,39 @@ function App() {
   };
 
   return (
-    <div className={styles.center}>
-      <img src={todolist} alt="checklist image" width={100} height={100} />
+    <>
+      <img
+        src={todolist}
+        alt="checklist image"
+        width={100}
+        height={100}
+        className={styles.center}
+      />
+      <Header title={title} />
 
-      <h1>Todoodles</h1>
-      <TodoForm onAddTodo={addTodo} isSaving={todoState.isSaving} />
-      <TodoList
-        todos={todoState.todoList}
-        onCompleteTodo={completeTodo}
-        onUpdateTodo={updateTodo}
-        isLoading={todoState.isLoading}
-      />
-      <hr />
-      <TodosViewForm
-        sortDirection={sortDirection}
-        setSortDirection={setSortDirection}
-        sortField={sortField}
-        setSortField={setSortField}
-        queryString={queryString}
-        setQueryString={setQueryString}
-      />
+      <div className={styles.center}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <TodosPage
+                todoState={todoState}
+                completeTodo={completeTodo}
+                updateTodo={updateTodo}
+                addTodo={addTodo}
+                sortField={sortField}
+                setSortField={setSortField}
+                sortDirection={sortDirection}
+                setSortDirection={setSortDirection}
+                queryString={queryString}
+                setQueryString={setQueryString}
+              />
+            }
+          />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </div>
       {todoState.errorMessage ? (
         <div className={styles.errorBorder}>
           <hr />
@@ -202,7 +235,7 @@ function App() {
       ) : (
         <></>
       )}
-    </div>
+    </>
   );
 }
 
